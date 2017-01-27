@@ -94,6 +94,17 @@ void AudioManager::Play(const std::string& aAudioName, bool aNewInstance, bool a
 	}
 }
 
+void AudioManager::Stop(const std::string & aAudioName)
+{
+	for (unsigned int index = 0; index < myUsedAudioFiles; ++index)
+	{
+		if (mySounds[index].myName == aAudioName)
+		{
+			myTryResults = mySounds[index].mySoundInstances->stop(FMOD_STUDIO_STOP_IMMEDIATE);
+		}
+	}
+}
+
 AudioManager::AudioManager()
 {
 }

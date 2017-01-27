@@ -27,6 +27,7 @@ public:
 	void LoadAudioBank(const std::string& aBankName);
 	void LoadAudioFile(const std::string& aAudioName);
 	void Play(const std::string& aAudioName, bool aNewInstance = false, bool aShouldRepeat = false, float aVolumePercentage = 100);
+	void Stop(const std::string& aAudioName);
 private:
 	AudioManager();
 	~AudioManager();
