@@ -7,24 +7,48 @@ AudioManager & AudioManager::GetInstance()
 	return instance;
 }
 
-void AudioManager::Init(const std::string& aBankPath)
+void AudioManager::Init()
 {
 	myTryResults = FMOD::Studio::System::create(&myAudioSystem);
 	assert(myTryResults == FMOD_OK && "Error creating audio system");
 	
 	myTryResults = myAudioSystem->initialize(myMaxChannels, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, 0);
 	assert(myTryResults == FMOD_OK && "Error initializing audio system");
-	
-	myTryResults = myAudioSystem->loadBankFile(aBankPath.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &myAudioBank);
-	assert(myTryResults == FMOD_OK && "Error loading bank file. Bad path?");
-
-	myAudioSystem->loadBankFile("Master Bank.strings.bank", FMOD_STUDIO_LOAD_BANK_NORMAL, &myStringBank);
-	
 }
 
 void AudioManager::Update()
 {
+	for (unsigned int index = 0; index < (myUsedAudioFiles + 1); index++)
+	{
+		if (mySounds[index].myIsRepeating)
+		{
+			FMOD_STUDIO_PLAYBACK_STATE state;
+			mySounds[index].mySoundInstances->getPlaybackState(&state);
+			if (state == FMOD_STUDIO_PLAYBACK_STOPPED)
+			{
+				mySounds[index].mySoundInstances->start();
+			}
+		}
+	}
+
 	myAudioSystem->update();
+}
+
+void AudioManager::LoadAudioBank(const std::string & aAudioBankName)
+{
+	std::string bankName = aAudioBankName;
+	std::string stringBankName = aAudioBankName;
+	bankName += ".bank";
+	stringBankName += ".strings.bank";
+
+	if (myUsedBanks < myMaxBanks)
+	{
+		myTryResults = myAudioSystem->loadBankFile(bankName.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &myBanks[myUsedBanks].myAudioBank);
+		assert(myTryResults == FMOD_OK && "Error loading bank file. Bad name?");
+
+		myAudioSystem->loadBankFile(stringBankName.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &myBanks[myUsedBanks].myStringBank);
+		myUsedBanks++;
+	}
 }
 
 void AudioManager::LoadAudioFile(const std::string& aAudioName)
@@ -35,24 +59,27 @@ void AudioManager::LoadAudioFile(const std::string& aAudioName)
 	if (myEventCount < myMaxAudioFiles)
 	{
 		FMOD::Studio::EventDescription* tempDescription = nullptr;
-		myAudioSystem->getEvent(eventName.c_str(), &tempDescription);
+		myTryResults = myAudioSystem->getEvent(eventName.c_str(), &tempDescription);
+		assert(myTryResults == FMOD_OK && "Error loading audio file");
 
 		FMOD::Studio::EventInstance* tempInstance = nullptr;
 		tempDescription->createInstance(&tempInstance);
 
-		myAudioFiles[myEventCount].mySoundInstances = tempInstance;
-		myAudioFiles[myEventCount].myName = aAudioName;
+		mySounds[myEventCount].mySoundInstances = tempInstance;
+		mySounds[myEventCount].myName = aAudioName;
 		myEventCount++;
 	}
 }
 
-void AudioManager::Play(const std::string& aAudioName)
+void AudioManager::Play(const std::string& aAudioName, bool aShouldRepeat, float aVolumePercentage)
 {
-	for (unsigned int i = 0; i < myMaxAudioFiles; ++i)
+	for (unsigned int i = 0; i < (myUsedAudioFiles + 1); ++i)
 	{
-		if (myAudioFiles[i].myName == aAudioName)
+		if (mySounds[i].myName == aAudioName)
 		{
-			myAudioFiles[i].mySoundInstances->start();
+			mySounds[i].myIsRepeating = aShouldRepeat;
+			mySounds[i].mySoundInstances->setVolume(aVolumePercentage / 100.f);
+			mySounds[i].mySoundInstances->start();
 			break;
 		}
 	}
