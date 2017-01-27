@@ -26,21 +26,22 @@ public:
 	void Update();
 	void LoadAudioBank(const std::string& aBankName);
 	void LoadAudioFile(const std::string& aAudioName);
-	void Play(const std::string& aAudioName, bool aShouldRepeat = false, float aVolumePercentage = 100);
+	void Play(const std::string& aAudioName, bool aNewInstance = false, bool aShouldRepeat = false, float aVolumePercentage = 100);
 private:
+	AudioManager();
+	~AudioManager();
+	
 	static const int myMaxAudioFiles = 100;
 	static const int myMaxBanks = 50;
+	const int myMaxChannels = 512;
 	unsigned int myUsedAudioFiles = 0;
 	unsigned int myUsedBanks = 0;
 
-	AudioManager();
-	~AudioManager();
+	Sound mySounds[myMaxAudioFiles];
+	Bank myBanks[myMaxBanks];
+	
 	FMOD_RESULT myTryResults;
 	FMOD::Studio::System* myAudioSystem = nullptr;
 	FMOD::Studio::Bank* myAudioBank = nullptr;
 	FMOD::Studio::Bank* myStringBank = nullptr;
-	Sound mySounds[myMaxAudioFiles];
-	Bank myBanks[myMaxBanks];
-	int myEventCount;
-	const int myMaxChannels = 512;
 };

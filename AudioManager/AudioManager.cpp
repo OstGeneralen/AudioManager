@@ -18,7 +18,7 @@ void AudioManager::Init()
 
 void AudioManager::Update()
 {
-	for (unsigned int index = 0; index < (myUsedAudioFiles + 1); index++)
+	for (unsigned int index = 0; index < (myUsedAudioFiles); index++)
 	{
 		if (mySounds[index].myIsRepeating)
 		{
@@ -56,7 +56,7 @@ void AudioManager::LoadAudioFile(const std::string& aAudioName)
 	std::string eventName = "event:/";
 	eventName += aAudioName;
 
-	if (myEventCount < myMaxAudioFiles)
+	if (myUsedAudioFiles < myMaxAudioFiles)
 	{
 		FMOD::Studio::EventDescription* tempDescription = nullptr;
 		myTryResults = myAudioSystem->getEvent(eventName.c_str(), &tempDescription);
@@ -65,22 +65,31 @@ void AudioManager::LoadAudioFile(const std::string& aAudioName)
 		FMOD::Studio::EventInstance* tempInstance = nullptr;
 		tempDescription->createInstance(&tempInstance);
 
-		mySounds[myEventCount].mySoundInstances = tempInstance;
-		mySounds[myEventCount].myName = aAudioName;
-		myEventCount++;
+		mySounds[myUsedAudioFiles].mySoundInstances = tempInstance;
+		mySounds[myUsedAudioFiles].myName = aAudioName;
+		myUsedAudioFiles++;
 	}
 }
 
-void AudioManager::Play(const std::string& aAudioName, bool aShouldRepeat, float aVolumePercentage)
+void AudioManager::Play(const std::string& aAudioName, bool aNewInstance, bool aShouldRepeat, float aVolumePercentage)
 {
-	for (unsigned int i = 0; i < (myUsedAudioFiles + 1); ++i)
+	if (aNewInstance)
 	{
-		if (mySounds[i].myName == aAudioName)
+		LoadAudioFile(aAudioName);
+		mySounds[myUsedAudioFiles - 1].mySoundInstances->setVolume(aVolumePercentage / 100.f);
+		mySounds[myUsedAudioFiles - 1].mySoundInstances->start();
+	}
+	else
+	{
+		for (unsigned int i = 0; i < (myUsedAudioFiles); ++i)
 		{
-			mySounds[i].myIsRepeating = aShouldRepeat;
-			mySounds[i].mySoundInstances->setVolume(aVolumePercentage / 100.f);
-			mySounds[i].mySoundInstances->start();
-			break;
+			if (mySounds[i].myName == aAudioName)
+			{
+				mySounds[i].myIsRepeating = aShouldRepeat;
+				mySounds[i].mySoundInstances->setVolume(aVolumePercentage / 100.f);
+				mySounds[i].mySoundInstances->start();
+				break;
+			}
 		}
 	}
 }
