@@ -23,37 +23,37 @@
     <ClInclude Include="AudioManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_studio.hpp">
+    <ClInclude Include="FMOD\fmod.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_studio_common.h">
+    <ClInclude Include="FMOD\fmod.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_studio.h">
+    <ClInclude Include="FMOD\fmod_codec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod.h">
+    <ClInclude Include="FMOD\fmod_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod.hpp">
+    <ClInclude Include="FMOD\fmod_dsp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_codec.h">
+    <ClInclude Include="FMOD\fmod_dsp_effects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_common.h">
+    <ClInclude Include="FMOD\fmod_errors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_dsp.h">
+    <ClInclude Include="FMOD\fmod_output.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_dsp_effects.h">
+    <ClInclude Include="FMOD\fmod_studio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_errors.h">
+    <ClInclude Include="FMOD\fmod_studio.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fmod_output.h">
+    <ClInclude Include="FMOD\fmod_studio_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

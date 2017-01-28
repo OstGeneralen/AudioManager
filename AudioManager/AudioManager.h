@@ -1,5 +1,5 @@
 #pragma once
-#include "fmod_studio.hpp"
+#include "FMOD/fmod_studio.hpp"
 #include <assert.h>
 #include <string>
 
