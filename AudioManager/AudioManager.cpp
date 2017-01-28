@@ -29,6 +29,15 @@ void AudioManager::Update()
 				mySounds[index].mySoundInstances->start();
 			}
 		}
+		else if (mySounds[index].myShouldBeFreed)
+		{
+			FMOD_STUDIO_PLAYBACK_STATE state;
+			mySounds[index].mySoundInstances->getPlaybackState(&state);
+			if (state == FMOD_STUDIO_PLAYBACK_STOPPED)
+			{
+				UnloadAudioFile(mySounds[index].myName);
+			}
+		}
 	}
 
 	myAudioSystem->update();
@@ -74,12 +83,39 @@ void AudioManager::LoadAudioFile(const std::string& aAudioName)
 	}
 }
 
+void AudioManager::UnloadAudioFile(const std::string & aAudioName)
+{
+	for (unsigned int index = 0; index < myUsedAudioFiles; ++index)
+	{
+		if (mySounds[index].myName == aAudioName)
+		{
+			mySounds[index].mySoundInstances->release();
+			
+			if (index == myUsedAudioFiles - 1)
+			{
+				myUsedAudioFiles -= 1;
+				return;
+			}
+			else
+			{
+				mySounds[index] = mySounds[myUsedAudioFiles - 1];
+				
+				myUsedAudioFiles -= 1;
+				return;
+			}
+		}
+	}
+
+	assert(false && "Could not unload audio file. Check name.");
+}
+
 void AudioManager::Play(const std::string& aAudioName, bool aNewInstance, bool aShouldRepeat, float aVolumePercentage)
 {
 	if (aNewInstance)
 	{
 		LoadAudioFile(aAudioName);
 		mySounds[myUsedAudioFiles - 1].mySoundInstances->setVolume(aVolumePercentage / 100.f);
+		mySounds[myUsedAudioFiles - 1].myShouldBeFreed = true;
 		mySounds[myUsedAudioFiles - 1].mySoundInstances->start();
 	}
 	else

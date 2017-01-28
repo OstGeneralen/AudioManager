@@ -7,6 +7,7 @@ struct Sound
 {
 	FMOD::Studio::EventInstance* mySoundInstances;
 	std::string myName;
+	bool myShouldBeFreed = false;
 	bool myIsRepeating;
 };
 
@@ -26,6 +27,7 @@ public:
 	void Update();
 	void LoadAudioBank(const std::string& aBankName, bool aIsMaster = false);
 	void LoadAudioFile(const std::string& aAudioName);
+	void UnloadAudioFile(const std::string& aAudioName);
 	void Play(const std::string& aAudioName, bool aNewInstance = false, bool aShouldRepeat = false, float aVolumePercentage = 100);
 	void Stop(const std::string& aAudioName);
 	void StopAll();
