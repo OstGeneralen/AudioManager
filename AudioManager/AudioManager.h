@@ -24,10 +24,11 @@ public:
 	static AudioManager& GetInstance();
 	void Init();
 	void Update();
-	void LoadAudioBank(const std::string& aBankName);
+	void LoadAudioBank(const std::string& aBankName, bool aIsMaster = false);
 	void LoadAudioFile(const std::string& aAudioName);
 	void Play(const std::string& aAudioName, bool aNewInstance = false, bool aShouldRepeat = false, float aVolumePercentage = 100);
 	void Stop(const std::string& aAudioName);
+	void StopAll();
 private:
 	AudioManager();
 	~AudioManager();

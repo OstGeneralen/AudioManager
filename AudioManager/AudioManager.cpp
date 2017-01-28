@@ -34,7 +34,7 @@ void AudioManager::Update()
 	myAudioSystem->update();
 }
 
-void AudioManager::LoadAudioBank(const std::string & aAudioBankName)
+void AudioManager::LoadAudioBank(const std::string & aAudioBankName, bool aIsMaster)
 {
 	std::string bankName = aAudioBankName;
 	std::string stringBankName = aAudioBankName;
@@ -46,7 +46,10 @@ void AudioManager::LoadAudioBank(const std::string & aAudioBankName)
 		myTryResults = myAudioSystem->loadBankFile(bankName.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &myBanks[myUsedBanks].myAudioBank);
 		assert(myTryResults == FMOD_OK && "Error loading bank file. Bad name?");
 
-		myAudioSystem->loadBankFile(stringBankName.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &myBanks[myUsedBanks].myStringBank);
+		if (aIsMaster)
+		{
+			myAudioSystem->loadBankFile(stringBankName.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &myBanks[myUsedBanks].myStringBank);
+		}
 		myUsedBanks++;
 	}
 }
@@ -101,7 +104,16 @@ void AudioManager::Stop(const std::string & aAudioName)
 		if (mySounds[index].myName == aAudioName)
 		{
 			myTryResults = mySounds[index].mySoundInstances->stop(FMOD_STUDIO_STOP_IMMEDIATE);
+			mySounds[index].myIsRepeating = false;
 		}
+	}
+}
+
+void AudioManager::StopAll()
+{
+	for (unsigned int index = 0; index < myUsedAudioFiles; ++index)
+	{
+		myTryResults = mySounds[index].mySoundInstances->stop(FMOD_STUDIO_STOP_IMMEDIATE);
 	}
 }
 
