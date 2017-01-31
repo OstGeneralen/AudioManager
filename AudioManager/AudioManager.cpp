@@ -126,7 +126,7 @@ void AudioManager::CrossFade(const std::string & aAudioOne, const std::string & 
 	{
 		if (!foundAudioOne)
 		{
-			if (mySounds[index].myName == aAudioOne)
+			if (!mySounds[index].myIsCrossFading)
 			{
 				mySounds[index].myIsCrossFading = true;
 				mySounds[index].myIsCrossFadingUp = false;
@@ -137,14 +137,14 @@ void AudioManager::CrossFade(const std::string & aAudioOne, const std::string & 
 		
 		if (!foundAudioTwo)
 		{
-			if (mySounds[index].myName == aAudioTwo)
-			{
-				mySounds[index].myIsCrossFading = true;
-				mySounds[index].myIsCrossFadingUp = true;
-				mySounds[index].myCrossFadeScalar = aCrossFadeScalar;
-				foundAudioTwo = true;
-				Play(aAudioTwo,  false, 0.f);
-			}
+				if (!mySounds[index].myIsCrossFading)
+				{
+					mySounds[index].myIsCrossFading = true;
+					mySounds[index].myIsCrossFadingUp = true;
+					mySounds[index].myCrossFadeScalar = aCrossFadeScalar;
+					foundAudioTwo = true;
+					Play(aAudioTwo, false, 0.f);
+				}
 		}
 
 		if (foundAudioOne && foundAudioTwo)
@@ -207,6 +207,9 @@ void AudioManager::SetMasterVolume(float aMasterVolume)
 	myMasterVolume = aMasterVolume / 100;
 	SetCategoryVolume(AudioCategory::Effect, myEffectsVolume * 100);
 	SetCategoryVolume(AudioCategory::Music, myMusicVolume * 100);
+
+	CorrectAllVolumes();
+
 }
 
 void AudioManager::SetCategoryVolume(AudioCategory aCategory, float aVolumePercentage)
@@ -232,6 +235,8 @@ void AudioManager::SetCategoryVolume(AudioCategory aCategory, float aVolumePerce
 		assert(false && "Bad AudioCategory to set volume for");
 		break;
 	}
+
+	CorrectAllVolumes();
 }
 
 void AudioManager::SetRepeat(const std::string & aAudioName, bool aRepeatState)
@@ -311,5 +316,19 @@ float AudioManager::CalculatePlayVolume(float aPercentage, AudioCategory aCatego
 	else
 	{
 		return (aPercentage / 100.f) * (myMasterVolume);
+	}
+}
+
+void AudioManager::CorrectAllVolumes()
+{
+	for (unsigned int index = 0; index < myUsedAudioFiles; index++)
+	{
+		float currentVolume = 0;
+		float volumeToSetTo = 0;
+
+		mySounds[index].mySoundInstances->getVolume(&currentVolume);
+		volumeToSetTo = CalculatePlayVolume(currentVolume * 100, mySounds[index].myCategory);
+
+		mySounds[index].mySoundInstances->setVolume(volumeToSetTo);
 	}
 }

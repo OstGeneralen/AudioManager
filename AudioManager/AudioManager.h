@@ -20,6 +20,7 @@ struct Sound
 	bool myIsCrossFading = false;
 	bool myIsCrossFadingUp = false;
 	float myCrossFadeScalar = 0.f;
+	float myInternalVolume = 1.f;
 };
 
 struct Bank
@@ -54,6 +55,7 @@ private:
 	void CrossFadeUpdate(unsigned int aIndex);
 
 	float CalculatePlayVolume(float aPercentage, AudioCategory aCategory = AudioCategory::None);
+	void CorrectAllVolumes();
 
 	static const int myMaxAudioFiles = 100;
 	static const int myMaxBanks = 50;
@@ -61,9 +63,9 @@ private:
 	unsigned int myUsedAudioFiles = 0;
 	unsigned int myUsedBanks = 0;
 
-	float myMasterVolume = 100;
-	float myEffectsVolume = 100;
-	float myMusicVolume = 100;
+	float myMasterVolume = 1;
+	float myEffectsVolume = 1;
+	float myMusicVolume = 1;
 
 	Sound mySounds[myMaxAudioFiles];
 	Bank myBanks[myMaxBanks];
