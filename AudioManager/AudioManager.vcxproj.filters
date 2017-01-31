@@ -21,6 +21,9 @@
     <ClCompile Include="AudioManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VolumeHandle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioManager.h">
@@ -58,6 +61,12 @@
     </ClInclude>
     <ClInclude Include="FMOD\fmod_studio_common.h">
       <Filter>Header Files\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioEnums.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VolumeHandle.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

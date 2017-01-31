@@ -114,8 +114,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioManager.cpp" />
+    <ClCompile Include="VolumeHandle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioEnums.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="FMOD\fmod.h" />
     <ClInclude Include="FMOD\fmod.hpp" />
@@ -128,6 +130,7 @@
     <ClInclude Include="FMOD\fmod_studio.h" />
     <ClInclude Include="FMOD\fmod_studio.hpp" />
     <ClInclude Include="FMOD\fmod_studio_common.h" />
+    <ClInclude Include="VolumeHandle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

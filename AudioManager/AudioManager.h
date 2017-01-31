@@ -1,20 +1,16 @@
 #pragma once
+#define AM AudioManager::GetInstance()
+
 #include "FMOD/fmod_studio.hpp"
 #include <assert.h>
 #include <string>
-	
-enum class AudioCategory
-{
-	None,
-	Effect,
-	Music,
-};
+#include "VolumeHandle.h"
 
 struct Sound
 {
 	FMOD::Studio::EventInstance* mySoundInstances;
 	std::string myName;
-	AudioCategory myCategory;
+	AudioChannel myChannel;
 	bool myShouldBeFreed = false;
 	bool myIsRepeating;
 	bool myIsCrossFading = false;
@@ -34,19 +30,19 @@ class AudioManager
 {
 public:
 	AudioManager(const AudioManager& aAudioManager) = delete;
+	VolumeHandle& GetVolumeHandle();
+	
 	static AudioManager& GetInstance();
 	void Init();
 	void Update();
 	void LoadAudioBank(const std::string& aBankName, bool aIsMaster = false);
-	void LoadAudioFile(const std::string& aAudioName, AudioCategory aCategory = AudioCategory::None);
+	void LoadAudioFile(const std::string& aAudioName, AudioChannel aChannel);
 	void UnloadAudioFile(const std::string& aAudioName);
 	void CrossFade(const std::string& aAudioOne, const std::string& aAudioTwo, float aCrossFadeScalar);
 	void Play(const std::string& aAudioName, bool aShouldRepeat = false, float aVolumePercentage = 100);
-	void PlayNewInstance(const std::string& aAudioName, AudioCategory aCategory = AudioCategory::None, bool aShouldRepeat = false, float aVolumePercentage = 100);
+	void PlayNewInstance(const std::string& aAudioName, AudioChannel aChannel, bool aShouldRepeat = false, float aVolumePercentage = 100);
 	void Stop(const std::string& aAudioName);
 	void StopAll();
-	void SetMasterVolume(float aMasterVolume);
-	void SetCategoryVolume(AudioCategory aCategory, float aVolume);
 	void SetRepeat(const std::string& aAudioName, bool aRepeatState);
 private:
 	AudioManager();
@@ -54,24 +50,17 @@ private:
 	
 	void CrossFadeUpdate(unsigned int aIndex);
 
-	float CalculatePlayVolume(float aPercentage, AudioCategory aCategory = AudioCategory::None);
-	void CorrectAllVolumes();
-
 	static const int myMaxAudioFiles = 100;
 	static const int myMaxBanks = 50;
 	const int myMaxChannels = 512;
 	unsigned int myUsedAudioFiles = 0;
 	unsigned int myUsedBanks = 0;
 
-	float myMasterVolume = 1;
-	float myEffectsVolume = 1;
-	float myMusicVolume = 1;
+	VolumeHandle myVolumeHandle;
 
 	Sound mySounds[myMaxAudioFiles];
 	Bank myBanks[myMaxBanks];
 	
 	FMOD_RESULT myTryResults;
 	FMOD::Studio::System* myAudioSystem = nullptr;
-	FMOD::Studio::Bank* myAudioBank = nullptr;
-	FMOD::Studio::Bank* myStringBank = nullptr;
 };

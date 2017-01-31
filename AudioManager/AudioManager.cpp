@@ -14,9 +14,6 @@ void AudioManager::Init()
 	
 	myTryResults = myAudioSystem->initialize(myMaxChannels, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, 0);
 	assert(myTryResults == FMOD_OK && "Error initializing audio system");
-
-	SetCategoryVolume(AudioCategory::Effect, 100);
-	SetCategoryVolume(AudioCategory::Music, 100);
 }
 
 void AudioManager::Update()
@@ -51,6 +48,11 @@ void AudioManager::Update()
 	myAudioSystem->update();
 }
 
+VolumeHandle & AudioManager::GetVolumeHandle()
+{
+	return myVolumeHandle;
+}
+
 void AudioManager::LoadAudioBank(const std::string & aAudioBankName, bool aIsMaster)
 {
 	std::string bankName = aAudioBankName;
@@ -71,7 +73,7 @@ void AudioManager::LoadAudioBank(const std::string & aAudioBankName, bool aIsMas
 	}
 }
 
-void AudioManager::LoadAudioFile(const std::string& aAudioName, AudioCategory aCategory)
+void AudioManager::LoadAudioFile(const std::string& aAudioName, AudioChannel aChannel)
 {
 	std::string eventName = "event:/";
 	eventName += aAudioName;
@@ -87,7 +89,7 @@ void AudioManager::LoadAudioFile(const std::string& aAudioName, AudioCategory aC
 
 		mySounds[myUsedAudioFiles].mySoundInstances = tempInstance;
 		mySounds[myUsedAudioFiles].myName = aAudioName;
-		mySounds[myUsedAudioFiles].myCategory = aCategory;
+		mySounds[myUsedAudioFiles].myChannel = aChannel;
 		myUsedAudioFiles++;
 	}
 }
@@ -160,7 +162,7 @@ void AudioManager::Play(const std::string& aAudioName, bool aShouldRepeat, float
 	{
 		if (mySounds[i].myName == aAudioName)
 		{
-			aVolumePercentage = CalculatePlayVolume(aVolumePercentage, mySounds[i].myCategory);
+			aVolumePercentage = myVolumeHandle.TranslateToUsedVolume(mySounds[i].myChannel, aVolumePercentage);
 			mySounds[i].myIsRepeating = aShouldRepeat;
 			mySounds[i].mySoundInstances->setVolume(aVolumePercentage);
 			mySounds[i].mySoundInstances->start();
@@ -169,15 +171,11 @@ void AudioManager::Play(const std::string& aAudioName, bool aShouldRepeat, float
 	}
 }
 
-void AudioManager::PlayNewInstance(const std::string & aAudioName, AudioCategory aCategory, bool aShouldRepeat, float aVolumePercentage)
+void AudioManager::PlayNewInstance(const std::string & aAudioName, AudioChannel aChannel, bool aShouldRepeat, float aVolumePercentage)
 {
-	LoadAudioFile(aAudioName);
+	LoadAudioFile(aAudioName, aChannel);
 
-	mySounds[myUsedAudioFiles - 1].myCategory = aCategory;
-
-	aVolumePercentage = CalculatePlayVolume(aVolumePercentage);
-
-	mySounds[myUsedAudioFiles - 1].mySoundInstances->setVolume(aVolumePercentage);
+	mySounds[myUsedAudioFiles - 1].mySoundInstances->setVolume(myVolumeHandle.TranslateToUsedVolume(aChannel, aVolumePercentage));
 	mySounds[myUsedAudioFiles - 1].myShouldBeFreed = true;
 	mySounds[myUsedAudioFiles - 1].mySoundInstances->start();
 }
@@ -200,43 +198,6 @@ void AudioManager::StopAll()
 	{
 		myTryResults = mySounds[index].mySoundInstances->stop(FMOD_STUDIO_STOP_IMMEDIATE);
 	}
-}
-
-void AudioManager::SetMasterVolume(float aMasterVolume)
-{
-	myMasterVolume = aMasterVolume / 100;
-	SetCategoryVolume(AudioCategory::Effect, myEffectsVolume * 100);
-	SetCategoryVolume(AudioCategory::Music, myMusicVolume * 100);
-
-	CorrectAllVolumes();
-
-}
-
-void AudioManager::SetCategoryVolume(AudioCategory aCategory, float aVolumePercentage)
-{
-	if (myMasterVolume > 1 && aVolumePercentage > 1)
-	{
-		aVolumePercentage = (myMasterVolume / 100.f) * (aVolumePercentage / 100.f);
-	}
-	else
-	{
-		aVolumePercentage = myMasterVolume * (aVolumePercentage / 100.f);
-	}
-
-	switch (aCategory)
-	{
-	case AudioCategory::Effect:
-		myEffectsVolume = aVolumePercentage;
-		break;
-	case AudioCategory::Music:
-		myMusicVolume = aVolumePercentage;
-		break;
-	default:
-		assert(false && "Bad AudioCategory to set volume for");
-		break;
-	}
-
-	CorrectAllVolumes();
 }
 
 void AudioManager::SetRepeat(const std::string & aAudioName, bool aRepeatState)
@@ -276,20 +237,7 @@ void AudioManager::CrossFadeUpdate(unsigned int aIndex)
 
 	mySounds[aIndex].mySoundInstances->setVolume(newVolume);
 
-	float volumeToReach = myMasterVolume;
-
-	switch (mySounds[aIndex].myCategory)
-	{
-	case AudioCategory::Effect:
-		volumeToReach = myEffectsVolume;
-		break;
-	case AudioCategory::Music:
-		volumeToReach = myMusicVolume;
-		break;
-	default:
-		volumeToReach = myMasterVolume;
-		break;
-	}
+	float volumeToReach = myVolumeHandle.GetChannelVolume(mySounds[aIndex].myChannel);
 
 	if (newVolume <= 0.f || newVolume >= volumeToReach)
 	{
@@ -300,35 +248,5 @@ void AudioManager::CrossFadeUpdate(unsigned int aIndex)
 
 		mySounds[aIndex].myIsCrossFading = false;
 		mySounds[aIndex].myIsCrossFadingUp = false;
-	}
-}
-
-float AudioManager::CalculatePlayVolume(float aPercentage, AudioCategory aCategory)
-{
-	if (aCategory == AudioCategory::Effect)
-	{
-		return (aPercentage / 100.f) * myEffectsVolume;
-	}
-	else if (aCategory == AudioCategory::Music)
-	{
-		return (aPercentage / 100.f) * myMusicVolume;
-	}
-	else
-	{
-		return (aPercentage / 100.f) * (myMasterVolume);
-	}
-}
-
-void AudioManager::CorrectAllVolumes()
-{
-	for (unsigned int index = 0; index < myUsedAudioFiles; index++)
-	{
-		float currentVolume = 0;
-		float volumeToSetTo = 0;
-
-		mySounds[index].mySoundInstances->getVolume(&currentVolume);
-		volumeToSetTo = CalculatePlayVolume(currentVolume * 100, mySounds[index].myCategory);
-
-		mySounds[index].mySoundInstances->setVolume(volumeToSetTo);
 	}
 }
