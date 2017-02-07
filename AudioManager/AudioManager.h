@@ -16,7 +16,7 @@ struct Sound
 	bool myIsCrossFading = false;
 	bool myIsCrossFadingUp = false;
 	float myCrossFadeScalar = 0.f;
-	float myInternalVolume = 1.f;
+	float myInternalVolume = 100.f;
 };
 
 struct Bank
@@ -41,6 +41,7 @@ public:
 	void CrossFade(const std::string& aAudioOne, const std::string& aAudioTwo, float aCrossFadeScalar);
 	void Play(const std::string& aAudioName, bool aShouldRepeat = false, float aVolumePercentage = 100);
 	void PlayNewInstance(const std::string& aAudioName, AudioChannel aChannel, bool aShouldRepeat = false, float aVolumePercentage = 100);
+	void SetParameter(const std::string& aAudioName, const std::string& aParameterName, const float aValue);
 	void Stop(const std::string& aAudioName);
 	void StopAll();
 	void SetRepeat(const std::string& aAudioName, bool aRepeatState);

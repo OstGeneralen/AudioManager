@@ -20,6 +20,8 @@ void AudioManager::Update()
 {
 	for (unsigned int index = 0; index < (myUsedAudioFiles); index++)
 	{
+		mySounds[index].mySoundInstances->setVolume(myVolumeHandle.TranslateToUsedVolume(mySounds[index].myChannel, mySounds[index].myInternalVolume));
+
 		if (mySounds[index].myIsRepeating)
 		{
 			FMOD_STUDIO_PLAYBACK_STATE state;
@@ -147,6 +149,7 @@ void AudioManager::CrossFade(const std::string & aAudioOne, const std::string & 
 					foundAudioTwo = true;
 					Play(aAudioTwo, false, 0.f);
 				}
+
 		}
 
 		if (foundAudioOne && foundAudioTwo)
@@ -162,6 +165,7 @@ void AudioManager::Play(const std::string& aAudioName, bool aShouldRepeat, float
 	{
 		if (mySounds[i].myName == aAudioName)
 		{
+			mySounds[i].myInternalVolume = aVolumePercentage;
 			aVolumePercentage = myVolumeHandle.TranslateToUsedVolume(mySounds[i].myChannel, aVolumePercentage);
 			mySounds[i].myIsRepeating = aShouldRepeat;
 			mySounds[i].mySoundInstances->setVolume(aVolumePercentage);
@@ -175,9 +179,21 @@ void AudioManager::PlayNewInstance(const std::string & aAudioName, AudioChannel 
 {
 	LoadAudioFile(aAudioName, aChannel);
 
+	mySounds[myUsedAudioFiles - 1].myInternalVolume = aVolumePercentage;
 	mySounds[myUsedAudioFiles - 1].mySoundInstances->setVolume(myVolumeHandle.TranslateToUsedVolume(aChannel, aVolumePercentage));
 	mySounds[myUsedAudioFiles - 1].myShouldBeFreed = true;
 	mySounds[myUsedAudioFiles - 1].mySoundInstances->start();
+}
+
+void AudioManager::SetParameter(const std::string & aAudioName, const std::string & aParameterName, const float aValue)
+{
+	for (unsigned int index = 0; index < myUsedAudioFiles; ++index)
+	{
+		if (mySounds[index].myName == aAudioName)
+		{
+			mySounds[index].mySoundInstances->setParameterValue(aParameterName.c_str(), aValue);
+		}
+	}
 }
 
 void AudioManager::Stop(const std::string & aAudioName)
